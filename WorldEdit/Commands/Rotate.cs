@@ -6,16 +6,18 @@ namespace WorldEdit.Commands
 	public class Rotate : WECommand
 	{
 		private readonly int _degrees;
+		private readonly int _version;
 
-		public Rotate(TSPlayer plr, int degrees)
+		public Rotate(TSPlayer plr, int degrees, int version)
 			: base(0, 0, 0, 0, plr)
 		{
 			_degrees = degrees;
+			_version = version;
 		}
 
 		public override void Execute()
 		{
-			var clipboardPath = Tools.GetClipboardPath(plr.Account.ID);
+			var clipboardPath = Tools.GetClipboardPath(plr.Account.ID, _version);
 
 			var data = Tools.LoadWorldData(clipboardPath);
 

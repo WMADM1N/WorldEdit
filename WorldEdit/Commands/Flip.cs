@@ -6,17 +6,19 @@ namespace WorldEdit.Commands
 	{
 		private readonly bool flipX;
 		private readonly bool flipY;
+		private readonly int version;
 
-		public Flip(TSPlayer plr, bool flipX, bool flipY)
+		public Flip(TSPlayer plr, bool flipX, bool flipY, int version)
 			: base(0, 0, 0, 0, plr)
 		{
 			this.flipX = flipX;
 			this.flipY = flipY;
+			this.version = version;
 		}
 
 		public override void Execute()
 		{
-			string clipboardPath = Tools.GetClipboardPath(plr.Account.ID);
+			string clipboardPath = Tools.GetClipboardPath(plr.Account.ID, version);
 
 			var data = Tools.LoadWorldData(clipboardPath);
 

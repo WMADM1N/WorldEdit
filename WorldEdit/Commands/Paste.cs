@@ -12,7 +12,7 @@ namespace WorldEdit.Commands
         private readonly string path;
         private readonly bool prepareUndo;
 
-        public Paste(int x, int y, TSPlayer plr, string path, int alignment, Expression expression, bool mode_MainBlocks, bool prepareUndo)
+		public Paste(int x, int y, TSPlayer plr, string path, int alignment, Expression expression, bool mode_MainBlocks, bool prepareUndo)
 			: base(x, y, int.MaxValue, int.MaxValue, plr)
 		{
 			this.alignment = alignment;

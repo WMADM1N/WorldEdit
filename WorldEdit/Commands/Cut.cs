@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using Auxiliary;
+using System.IO;
 using Terraria;
 using TShockAPI;
 using TShockAPI.DB;
@@ -20,11 +21,9 @@ namespace WorldEdit.Commands
 			foreach (string fileName in Directory.EnumerateFiles(WorldEdit.DefaultDirectory, string.Format("redo-{0}-{1}-*.dat", Main.worldID, plr.Account.ID)))
 				File.Delete(fileName);
 
-			var entity = EditsEntity.GetAsync(plr.Account.ID)
-				.GetAwaiter()
-				.GetResult();
+            var entity = IModel.GetAsync(GetRequest.Bson<WorldEditUser>(x => x.TShockId == plr.Account.ID), x => x.TShockId = plr.Account.ID).GetAwaiter().GetResult()!;
 
-			int undoLevel = ++entity.UndoLevel;
+            int undoLevel = ++entity.UndoLevel;
 
 			entity.RedoLevel = -1;
 			

@@ -104,7 +104,7 @@ namespace WorldEdit
 			{
 				Configuration<WorldEditSettings>.Load("WorldEdit");
 
-				Tools.MaxUndos = Configuration<WorldEditSettings>.Settings.DefaultUndoAmount;
+				Tools._maxUndos = Configuration<WorldEditSettings>.Settings.DefaultUndoAmount;
 				MagicWand.MaxPointCount = Configuration<WorldEditSettings>.Settings.MagicWandTileLimit;
 
 				x.Player.SendSuccessMessage("[WorldEdit] Reloaded configuration.");
@@ -263,9 +263,13 @@ namespace WorldEdit
 			{
 				HelpText = "Rotates the worldedit clipboard."
 			});
-			TShockAPI.Commands.ChatCommands.Add(new Command("worldedit.schematic", Schematic, "/schematic", "/schem", "/sc", "sc")
+			TShockAPI.Commands.ChatCommands.Add(new Command("worldedit.schematic", SchematicNew, "/schematic", "/schem", "/sc", "sc")
 			{
 				HelpText = "Manages worldedit schematics."
+			});
+			TShockAPI.Commands.ChatCommands.Add(new Command("worldedit.schematic", SchematicOld, "/schematicold", "/schemo", "/sco", "sco")
+			{
+				HelpText = "Manages old worldedit schematics."
 			});
 			TShockAPI.Commands.ChatCommands.Add(new Command("worldedit.schematic.private", PrivateSchematic, "/private-schematic", "/priv-schem", "/psc", "psc")
 			{
@@ -370,7 +374,7 @@ namespace WorldEdit
 
 			Main.player[Main.myPlayer] = new Player();
 			var item = new Item();
-			for (var i = 1; i < Main.maxItemTypes; i++)
+			for (var i = 1; i < Terraria.ID.ItemID.Count; i++)
 			{
 				item.netDefaults(i);
 
@@ -1024,7 +1028,7 @@ namespace WorldEdit
 			}
 			if (e.Parameters.Count != 1)
 				e.Player.SendErrorMessage("Invalid syntax! Proper syntax: //flip <direction>");
-			else if (!Tools.HasClipboard(e.Player.Account.ID))
+			else if (!Tools.HasClipboard(e.Player.Account.ID, out var version))
 				e.Player.SendErrorMessage("Invalid clipboard!");
 			else
 			{
@@ -1042,7 +1046,7 @@ namespace WorldEdit
 						return;
 					}
 				}
-				_commandQueue.Add(new Flip(e.Player, flipX, flipY));
+				_commandQueue.Add(new Flip(e.Player, flipX, flipY, version));
 			}
 		}
 
@@ -1460,7 +1464,7 @@ namespace WorldEdit
 			e.Player.SendInfoMessage("X: {0}, Y: {1}", info.X, info.Y);
 			if (info.X == -1 || info.Y == -1)
 				e.Player.SendErrorMessage("Invalid first point!");
-			else if (!Tools.HasClipboard(e.Player.Account.ID))
+			else if (!Tools.HasClipboard(e.Player.Account.ID, out var version))
 				e.Player.SendErrorMessage("Invalid clipboard!");
 			else
 			{
@@ -1509,7 +1513,7 @@ namespace WorldEdit
 						}
 					}
 				}
-				_commandQueue.Add(new Paste(info.X, info.Y, e.Player, Tools.GetClipboardPath(e.Player.Account.ID), alignment, expression!, mode_MainBlocks, true));
+				_commandQueue.Add(new Paste(info.X, info.Y, e.Player, Tools.GetClipboardPath(e.Player.Account.ID, version), alignment, expression!, mode_MainBlocks, true));
 			}
 		}
 
@@ -1524,7 +1528,7 @@ namespace WorldEdit
 			e.Player.SendInfoMessage("X: {0}, Y: {1}", info.X, info.Y);
 			if (info.X == -1 || info.Y == -1)
 				e.Player.SendErrorMessage("Invalid first point!");
-			else if (!Tools.HasClipboard(e.Player.Account.ID))
+			else if (!Tools.HasClipboard(e.Player.Account.ID, out var version))
 				e.Player.SendErrorMessage("Invalid clipboard!");
 			else if (e.Parameters.Count < 1)
 				e.Player.SendErrorMessage("Invalid syntax! Proper syntax: //spaste [alignment] [-flag -flag ...] [=> boolean expr...]");
@@ -1590,7 +1594,7 @@ namespace WorldEdit
 						}
 					}
 				}
-				_commandQueue.Add(new SPaste(info.X, info.Y, e.Player, alignment, expression!, tiles, tilePaints, emptyTiles, walls, wallPaints, wires, liquids));
+				_commandQueue.Add(new SPaste(info.X, info.Y, e.Player, alignment, expression!, tiles, tilePaints, emptyTiles, walls, wallPaints, wires, liquids, version));
 			}
 		}
 
@@ -1905,7 +1909,7 @@ namespace WorldEdit
 				e.Player.SendErrorMessage("Invalid syntax! Proper syntax: //rotate <angle>");
 				return;
 			}
-			if (!Tools.HasClipboard(e.Player.Account.ID))
+			if (!Tools.HasClipboard(e.Player.Account.ID, out int version))
 			{
 				e.Player.SendErrorMessage("Invalid clipboard!");
 				return;
@@ -1914,7 +1918,7 @@ namespace WorldEdit
 			if (!int.TryParse(e.Parameters[0], out int degrees) || degrees % 90 != 0)
 				e.Player.SendErrorMessage("Invalid angle '{0}'!", e.Parameters[0]);
 			else
-				_commandQueue.Add(new Rotate(e.Player, degrees));
+				_commandQueue.Add(new Rotate(e.Player, degrees, version));
 		}
 
 		private void Scale(CommandArgs e)
@@ -1929,7 +1933,7 @@ namespace WorldEdit
 				e.Player.SendErrorMessage("Invalid syntax! Proper syntax: //scale <+/-> <amount>");
 				return;
 			}
-			if (!Tools.HasClipboard(e.Player.Account.ID))
+			if (!Tools.HasClipboard(e.Player.Account.ID, out var version))
 			{
 				e.Player.SendErrorMessage("Invalid clipboard!");
 				return;
@@ -1939,12 +1943,22 @@ namespace WorldEdit
 				e.Player.SendErrorMessage("Invalid amount!");
 				return;
 			}
-			_commandQueue.Add(new Scale(e.Player, (e.Parameters[0] == "+"), scale));
+			_commandQueue.Add(new Scale(e.Player, (e.Parameters[0] == "+"), scale, version));
 		}
 
-		private void Schematic(CommandArgs e)
+		private void SchematicOld(CommandArgs e)
+			=> Schematic(e, false);
+
+		private void SchematicNew(CommandArgs e)
+			=> Schematic(e, true);
+
+		private void Schematic(CommandArgs e, bool newschemVersion)
 		{
-			const string fileFormat = "schematic-{0}.dat";
+			string version = "v2";
+			if (!newschemVersion)
+				version = "v1";
+
+			string fileFormat = "{0}-schematic-{1}.dat";
 
 			string subCmd = e.Parameters.Count == 0 ? "help" : e.Parameters[0].ToLowerInvariant();
 			switch (subCmd)
@@ -1958,23 +1972,15 @@ namespace WorldEdit
 							return;
 						}
 
-						var path = Path.Combine(Configuration<WorldEditSettings>.Settings.SchematicDirectory, string.Format(fileFormat, e.Parameters[1]));
+						var path = Path.Combine(Configuration<WorldEditSettings>.Settings.SchematicDirectory, string.Format(fileFormat, version, e.Parameters[1]));
 
-						if (!File.Exists(path))
+						if (!e.Player.HasPermission("worldedit.schematic.delete"))
 						{
-							e.Player.SendErrorMessage("Invalid schematic '{0}'!", e.Parameters[1]);
+							e.Player.SendErrorMessage("You do not have permission to delete global schematics.");
 							return;
 						}
-						else
-						{
-							if (!e.Player.HasPermission("worldedit.schematic.delete"))
-							{
-								e.Player.SendErrorMessage("You do not have permission to delete global schematics.");
-								return;
-							}
 
-							File.Delete(path);
-						}
+						File.Delete(path);
 
 						e.Player.SendErrorMessage("Deleted schematic '{0}'.", e.Parameters[1]);
 					}
@@ -1996,10 +2002,10 @@ namespace WorldEdit
 						if (!PaginationTools.TryParsePageNumber(e.Parameters, 1, e.Player, out int pageNumber))
 							return;
 
-						var schematics = from s in Directory.EnumerateFiles(Configuration<WorldEditSettings>.Settings.SchematicDirectory, string.Format(fileFormat, "*"))
-										 select Path.GetFileNameWithoutExtension(s)[10..];
+						var schematics = from s in Directory.EnumerateFiles(Configuration<WorldEditSettings>.Settings.SchematicDirectory, string.Format(fileFormat, version, "*"))
+										 select s.GetSchemInfo();
 
-						PaginationTools.SendPage(e.Player, pageNumber, PaginationTools.BuildLinesFromTerms(schematics),
+						PaginationTools.SendPage(e.Player, pageNumber, PaginationTools.BuildLinesFromTerms(schematics.Select(x => x.Item2)),
 							new PaginationTools.Settings
 							{
 								HeaderFormat = "Schematics ({0}/{1}):",
@@ -2022,9 +2028,13 @@ namespace WorldEdit
 							return;
 						}
 
-						var path = Path.Combine(Configuration<WorldEditSettings>.Settings.SchematicDirectory, string.Format(fileFormat, e.Parameters[1]));
+						var path = Path.Combine(Configuration<WorldEditSettings>.Settings.SchematicDirectory, string.Format(fileFormat, version, e.Parameters[1]));
 
-						var clipboard = Tools.GetClipboardPath(e.Player.Account.ID);
+						var clipboard = Tools.GetClipboardPath(e.Player.Account.ID, int.Parse(version[1].ToString()));
+
+						Console.WriteLine(clipboard);
+						Console.WriteLine(version);
+						Console.WriteLine(path);
 
 						if (!File.Exists(path))
 						{
@@ -2084,7 +2094,7 @@ namespace WorldEdit
 							return;
 						}
 
-						var path = Path.Combine(Configuration<WorldEditSettings>.Settings.SchematicDirectory, string.Format(fileFormat, name));
+						var path = Path.Combine(Configuration<WorldEditSettings>.Settings.SchematicDirectory, string.Format(fileFormat, version, name));
 
 						if (File.Exists(path))
 						{
@@ -2695,13 +2705,13 @@ namespace WorldEdit
 							}
 						}
 
-						if (!Tools.HasClipboard(account.ID))
+						if (!Tools.HasClipboard(account.ID, out var version))
 						{
 							e.Player.SendErrorMessage($"{account.Name} doesn't have a clipboard.");
 							return;
 						}
 
-						WorldSectionData data = Tools.LoadWorldData(Tools.GetClipboardPath(account.ID));
+						WorldSectionData data = Tools.LoadWorldData(Tools.GetClipboardPath(account.ID, version));
 						e.Player.SendSuccessMessage($"{account.Name}'s clipboard size: " +
 							$"{data.Tiles.GetLength(0) - 1}x{data.Tiles.GetLength(1) - 1}.");
 						break;

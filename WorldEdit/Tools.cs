@@ -20,15 +20,26 @@ namespace WorldEdit
     public static class Tools
     {
         internal const int _bufferSize = 1048576;
-        internal static int MaxUndos;
+        internal static int _maxUndos;
 
         private static readonly char[] _invalidFileCharacters = Path.GetInvalidFileNameChars();
 
-        public static string GetClipboardPath(int accountID)
-            => Path.Combine(WorldEdit.DefaultDirectory, string.Format("clipboard-{0}-{1}.dat", Main.worldID, accountID));
+        public static string GetClipboardPath(int accountID, int version = 2)
+            => Path.Combine(WorldEdit.DefaultDirectory, string.Format("v{0}-clipboard-{1}-{2}.dat", version, Main.worldID, accountID));
 
-        public static bool HasClipboard(int accountID)
-            => File.Exists(GetClipboardPath(accountID));
+        public static bool HasClipboard(int accountID, out int version)
+        {
+            version = 1;
+            foreach (var file in Directory.EnumerateFiles(WorldEdit.DefaultDirectory).Select(x => new FileInfo(x)))
+            {
+                if (file.Name[2..] == $"-clipboard-{Main.worldID}-{accountID}.dat")
+                {
+                    version = int.Parse(file.Name[1].ToString());
+                    return true;
+                }
+            }
+            return false;
+        }
 
         public static bool IsCorrectName(string name)
             => name.All(c => !_invalidFileCharacters.Contains(c));
@@ -47,9 +58,20 @@ namespace WorldEdit
         }
 
         public static WorldSectionData LoadWorldData(string path)
-            => LoadWorldData(File.Open(path, FileMode.Open));
+        {
+            Console.WriteLine(path);
 
-        public static WorldSectionData LoadWorldData(Stream stream)
+            var fileinfo = new FileInfo(path);
+
+            if (!int.TryParse(fileinfo.Name[1].ToString(), out int version))
+                version = 2;
+
+            Console.WriteLine(version);
+                
+            return LoadWorldData(File.Open(path, FileMode.Open), version);
+        }
+
+        public static WorldSectionData LoadWorldData(Stream stream, int version)
         {
             int x, y, width, height;
             using (var reader = new BinaryReader(stream, System.Text.Encoding.UTF8, true))
@@ -68,7 +90,7 @@ namespace WorldEdit
                 for (var i = 0; i < width; i++)
                 {
                     for (var j = 0; j < height; j++)
-                        worldData.Tiles[i, j] = reader.ReadTile();
+                        worldData.Tiles[i, j] = reader.ReadTile(version);
                 }
 
                 try
@@ -171,63 +193,58 @@ namespace WorldEdit
             return items;
         }
 
-        public static Tile ReadTile(this BinaryReader reader)
+        public static Tile ReadTile(this BinaryReader reader, int schematicVersion)
         {
-            try
+            switch (schematicVersion)
             {
-                var sTileHeader = reader.ReadUInt16();
-                var bTileHeader = reader.ReadByte();
-                var bTileHeader2 = reader.ReadByte();
-                var bTileHeader3 = reader.ReadByte();
-
-                var tile = new Tile
-                {
-                    sTileHeader = sTileHeader,
-                    bTileHeader = bTileHeader,
-                    bTileHeader2 = bTileHeader2,
-                    bTileHeader3 = bTileHeader3,
-                };
-
-                // Tile type
-                if (tile.active())
-                {
-                    tile.type = reader.ReadUInt16();
-                    if (Main.tileFrameImportant[tile.type])
+                case 1:
+                default:
                     {
-                        tile.frameX = reader.ReadInt16();
-                        tile.frameY = reader.ReadInt16();
+                        var tile = new Tile
+                        {
+                            sTileHeader = reader.ReadUInt16(),
+                            bTileHeader = reader.ReadByte(),
+                            bTileHeader2 = reader.ReadByte(),
+                        };
+
+                        // Tile type
+                        if (tile.active())
+                        {
+                            tile.type = reader.ReadUInt16();
+                            if (Main.tileFrameImportant[tile.type])
+                            {
+                                tile.frameX = reader.ReadInt16();
+                                tile.frameY = reader.ReadInt16();
+                            }
+                        }
+                        tile.wall = reader.ReadUInt16();
+                        tile.liquid = reader.ReadByte();
+                        return tile;
                     }
-                }
-                tile.wall = reader.ReadUInt16();
-                tile.liquid = reader.ReadByte();
-                return tile;
-            }
-            catch (EndOfStreamException) 
-            {
-                var sTileHeader = reader.ReadUInt16();
-                var bTileHeader = reader.ReadByte(); 
-                var bTileHeader2 = reader.ReadByte(); 
-
-                var tile = new Tile
-                {
-                    sTileHeader = sTileHeader,
-                    bTileHeader = bTileHeader,
-                    bTileHeader2 = bTileHeader2,
-                };
-
-                // Tile type
-                if (tile.active())
-                {
-                    tile.type = reader.ReadUInt16(); 
-                    if (Main.tileFrameImportant[tile.type])
+                case 2:
                     {
-                        tile.frameX = reader.ReadInt16(); 
-                        tile.frameY = reader.ReadInt16(); 
+                        var tile = new Tile
+                        {
+                            sTileHeader = reader.ReadUInt16(),
+                            bTileHeader = reader.ReadByte(),
+                            bTileHeader2 = reader.ReadByte(),
+                            bTileHeader3 = reader.ReadByte(),
+                        };
+
+                        // Tile type
+                        if (tile.active())
+                        {
+                            tile.type = reader.ReadUInt16();
+                            if (Main.tileFrameImportant[tile.type])
+                            {
+                                tile.frameX = reader.ReadInt16();
+                                tile.frameY = reader.ReadInt16();
+                            }
+                        }
+                        tile.wall = reader.ReadUInt16();
+                        tile.liquid = reader.ReadByte();
+                        return tile;
                     }
-                }
-                tile.wall = reader.ReadUInt16(); 
-                tile.liquid = reader.ReadByte(); 
-                return tile;
             }
         }
 
@@ -301,7 +318,7 @@ namespace WorldEdit
         }
 
         public static void LoadWorldSection(string path, int? X = null, int? Y = null, bool Tiles = true)
-    => LoadWorldSection(LoadWorldData(path), X, Y, Tiles);
+            => LoadWorldSection(LoadWorldData(path), X, Y, Tiles);
 
         public static void LoadWorldSection(WorldSectionData Data, int? X = null, int? Y = null, bool Tiles = true)
         {

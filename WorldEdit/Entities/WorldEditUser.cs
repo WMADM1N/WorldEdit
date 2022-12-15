@@ -11,13 +11,8 @@ using System.Threading.Tasks;
 namespace WorldEdit.Entities
 {
     [BsonIgnoreExtraElements]
-    public class EditsEntity : IEntity, IConcurrentlyAccessible<EditsEntity>
+    public class WorldEditUser : BsonModel
     {
-        [BsonId]
-        public ObjectId ObjectId { get; set; }
-
-        [BsonIgnore]
-        public EntityState State { get; set; }
 
         private int _tshockId;
         public int TShockId
@@ -26,7 +21,7 @@ namespace WorldEdit.Entities
                 => _tshockId;
             set
             {
-                _ = ModifyAsync(Builders<EditsEntity>.Update.Set(x => x.TShockId, value));
+                _ = this.SaveAsync(x => x.TShockId, value);
                 _tshockId = value;
             }
         }
@@ -38,7 +33,7 @@ namespace WorldEdit.Entities
                 => _undoAmount;
             set
             {
-                _ = ModifyAsync(Builders<EditsEntity>.Update.Set(x => x.UndoLevel, value));
+                _ = this.SaveAsync(x => x.UndoLevel, value);
                 _undoAmount = value;
             }
         }
@@ -50,23 +45,9 @@ namespace WorldEdit.Entities
                 => _redoAmount;
             set
             {
-                _ = ModifyAsync(Builders<EditsEntity>.Update.Set(x => x.RedoLevel, value));
+                _ = this.SaveAsync(x => x.RedoLevel, value);
                 _redoAmount = value;
             }
-        }
-
-        public async Task<bool> DeleteAsync()
-            => await EditsHelper.DeleteAsync(this);
-
-        public async Task<bool> ModifyAsync(UpdateDefinition<EditsEntity> update)
-            => await EditsHelper.ModifyAsync(this, update);
-
-        public static async Task<EditsEntity> GetAsync(int id)
-            => await EditsHelper.GetAsync(id);
-
-        public void Dispose()
-        {
-
         }
     }
 }

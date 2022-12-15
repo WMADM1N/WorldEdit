@@ -1,4 +1,5 @@
-﻿using Auxiliary.Configuration;
+﻿using Auxiliary;
+using Auxiliary.Configuration;
 using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
@@ -14,12 +15,24 @@ namespace WorldEdit
 {
     public static class Clipboard
     {
+        public static (int, string) GetSchemInfo(this string filename)
+        {
+            int version = 1;
+            string schemname = "";
+            if (int.TryParse(filename[1].ToString(), out version))
+                schemname = Path.GetFileNameWithoutExtension(filename[12..]);
+            else
+                schemname = Path.GetFileNameWithoutExtension(filename[10..]);
+
+            return (version, schemname);
+        }
+
         public static void PrepareUndo(int x, int y, int x2, int y2, TSPlayer plr)
         {
             if (!plr.RealPlayer)
                 return;
 
-            var entity = EditsEntity.GetAsync(plr.Account.ID).GetAwaiter().GetResult();
+            var entity = IModel.GetAsync(GetRequest.Bson<WorldEditUser>(x => x.TShockId == plr.Account.ID), x => x.TShockId = plr.Account.ID).GetAwaiter().GetResult()!;
 
             entity.UndoLevel += 1;
             entity.RedoLevel = 0;
@@ -48,7 +61,7 @@ namespace WorldEdit
             if (id <= 0)
                 return false;
 
-            var entity = EditsEntity.GetAsync(id).GetAwaiter().GetResult();
+            var entity = IModel.GetAsync(GetRequest.Bson<WorldEditUser>(x => x.TShockId == id), x => x.TShockId = id).GetAwaiter().GetResult()!;
 
             var ul = entity.UndoLevel;
             var rl = entity.RedoLevel;
@@ -87,7 +100,7 @@ namespace WorldEdit
             if (id <= 0)
                 return false;
 
-            var entity = EditsEntity.GetAsync(id).GetAwaiter().GetResult();
+            var entity = IModel.GetAsync(GetRequest.Bson<WorldEditUser>(x => x.TShockId == id), x => x.TShockId = id).GetAwaiter().GetResult()!;
 
             var ul = entity.UndoLevel;
             var rl = entity.RedoLevel;

@@ -15,8 +15,9 @@ namespace WorldEdit.Commands
         private readonly bool wallPaints;
         private readonly bool wires;
         private readonly bool liquids;
+        private readonly int version;
 
-        public SPaste(int x, int y, TSPlayer plr, int alignment, Expression expression, bool tiles, bool tilePaints, bool emptyTiles, bool walls, bool wallPaints, bool wires, bool liquids)
+        public SPaste(int x, int y, TSPlayer plr, int alignment, Expression expression, bool tiles, bool tilePaints, bool emptyTiles, bool walls, bool wallPaints, bool wires, bool liquids, int version)
             : base(x, y, int.MaxValue, int.MaxValue, plr)
         {
             this.alignment = alignment;
@@ -28,11 +29,12 @@ namespace WorldEdit.Commands
             this.wallPaints = wallPaints;
             this.wires = wires;
             this.liquids = liquids;
+            this.version = version;
         }
 
         public override void Execute()
         {
-            var clipboardPath = Tools.GetClipboardPath(plr.Account.ID);
+            var clipboardPath = Tools.GetClipboardPath(plr.Account.ID, version);
 
             var data = Tools.LoadWorldData(clipboardPath);
 

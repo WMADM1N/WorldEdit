@@ -9,17 +9,19 @@ namespace WorldEdit.Commands
     {
         private readonly bool _addition;
         private readonly int _scale;
+        private readonly int _version;
 
-        public Scale(TSPlayer plr, bool addition, int scale)
+        public Scale(TSPlayer plr, bool addition, int scale, int version)
 			: base(0, 0, 0, 0, plr)
 		{
             _addition = addition;
+            _version = version;
 			_scale = scale;
 		}
 
 		public override void Execute()
 		{
-			var clipboardPath = Tools.GetClipboardPath(plr.Account.ID);
+			var clipboardPath = Tools.GetClipboardPath(plr.Account.ID, _version);
 
 			var data = Tools.LoadWorldData(clipboardPath);
 
