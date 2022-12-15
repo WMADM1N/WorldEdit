@@ -384,7 +384,7 @@ namespace WorldEdit
 				}
 
 				var name = TShockAPI.Localization.EnglishLanguage.GetItemNameById(i);
-				Colors.Add(name.Substring(0, name.Length - 6).Replace(" ", "").ToLowerInvariant(), item.paint);
+				Colors.Add(name[..^6].Replace(" ", "").ToLowerInvariant(), item.paint);
 			}
 			#endregion
 
