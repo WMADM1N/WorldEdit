@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Terraria;
+using Terraria.ID;
 using TShockAPI;
 using WorldEdit.Expressions;
 
@@ -39,30 +40,30 @@ namespace WorldEdit.Commands
 							{
 								if (select(i, j, plr) && expression.Evaluate(tile, i, j) && magicWand.InSelection(i, j))
 								{
-									tile.fullbrightBlock(false);
-									edits++;
+                                    WorldGen.paintCoatTile(i, j, PaintCoatingID.None, true);
+                                    edits++;
 								}
 							}
 							if (tile.active() && tile.invisibleBlock())
 							{
 								if (select(i, j, plr) && expression.Evaluate(tile, i, j) && magicWand.InSelection(i, j))
 								{
-									tile.invisibleBlock(false);
-									edits++;
+                                    WorldGen.paintCoatTile(i, j, PaintCoatingID.None, true);
+                                    edits++;
 								}
 							}
 							break;
 						case 1:
 							if (tile.active() && !tile.fullbrightBlock() && select(i, j, plr) && expression.Evaluate(tile, i, j) && magicWand.InSelection(i, j))
 							{
-								tile.fullbrightBlock(true);
-								edits++;
+                                WorldGen.paintCoatTile(i, j, PaintCoatingID.Glow, true);
+                                edits++;
 							}
 							break;
 						case 2:
 							if (tile.active() && !tile.invisibleBlock() && select(i, j, plr) && expression.Evaluate(tile, i, j) && magicWand.InSelection(i, j))
                             {
-								tile.invisibleBlock(true);
+                                WorldGen.paintCoatTile(i, j, PaintCoatingID.Echo, true);
 								edits++;
                             }
 							break;

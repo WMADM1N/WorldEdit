@@ -27,7 +27,7 @@ namespace WorldEdit
 
         public static List<int> GetCoatID(string coat)
         {
-            if (int.TryParse(coat, out var id) && id >= 0 && id < 2)
+            if (int.TryParse(coat, out var id) && id >= 0 && id < 3)
                 return new List<int> { id };
 
             var list = new List<int>();
