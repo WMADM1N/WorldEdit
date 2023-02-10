@@ -37,9 +37,10 @@ namespace WorldEdit.Commands
 					}
 				}
 			}
+            ResetSection();
 
-			ResetSection();
-			plr.SendSuccessMessage("Set tiles. ({0})", edits);
-		}
+            string tileName = tileType == -1 ? "air" : "wall " + tileType;
+            plr.SendSuccessMessage("Set tiles to {0}. ({1})", tileName, edits);
+        }
 	}
 }
