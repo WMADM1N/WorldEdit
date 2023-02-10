@@ -146,15 +146,7 @@ namespace WorldEdit
 			{
 				HelpText = "Drains liquids in the worldedit selection."
 			});
-			TShockAPI.Commands.ChatCommands.Add(new Command("worldedit.region.fill", Fill, "/fill")
-			{
-				HelpText = "Fills the worldedit selection."
-			});
-			TShockAPI.Commands.ChatCommands.Add(new Command("worldedit.region.fillwall", FillWall, "/fillwall", "/fillw")
-			{
-				HelpText = "Fills the worldedit selection."
-			});
-			TShockAPI.Commands.ChatCommands.Add(new Command("worldedit.utils.fixghosts", FixGhosts, "/fixghosts")
+            TShockAPI.Commands.ChatCommands.Add(new Command("worldedit.utils.fixghosts", FixGhosts, "/fixghosts")
 			{
 				HelpText = "Fixes invisible signs, chests and item frames."
 			});
@@ -199,14 +191,6 @@ namespace WorldEdit
 				AllowServer = false,
 				HelpText = "Sets the worldedit selection to a radius around you."
 			});
-			TShockAPI.Commands.ChatCommands.Add(new Command("worldedit.selection.outline", Outline, "/outline", "/ol")
-			{
-				HelpText = "Sets block outline around blocks in area."
-			});
-			TShockAPI.Commands.ChatCommands.Add(new Command("worldedit.selection.outlinewall", OutlineWall, "/outlinewall", "/olw")
-			{
-				HelpText = "Sets wall outline around walls in area."
-			});
 			TShockAPI.Commands.ChatCommands.Add(new Command("worldedit.region.paint", Paint, "/paint", "/pa")
 			{
 				HelpText = "Paints tiles in the worldedit selection."
@@ -247,14 +231,6 @@ namespace WorldEdit
 			{
 				HelpText = "Selects a region as a worldedit selection."
 			});
-			TShockAPI.Commands.ChatCommands.Add(new Command("worldedit.region.replace", Replace, "/replace", "/rep")
-			{
-				HelpText = "Replaces tiles in the worldedit selection."
-			});
-			TShockAPI.Commands.ChatCommands.Add(new Command("worldedit.region.replacewall", ReplaceWall, "/replacewall", "/repw")
-			{
-				HelpText = "Replaces walls in the worldedit selection."
-			});
 			TShockAPI.Commands.ChatCommands.Add(new Command("worldedit.selection.resize", Resize, "/resize", "/res")
 			{
 				HelpText = "Resizes the worldedit selection in a direction."
@@ -283,10 +259,6 @@ namespace WorldEdit
 			{
 				HelpText = "Sets tiles in the worldedit selection."
 			});
-			TShockAPI.Commands.ChatCommands.Add(new Command("worldedit.region.setgrass", SetGrass, "/setgrass", "/sg")
-			{
-				HelpText = "Sets certain grass in the worldedit selection."
-			});
 			TShockAPI.Commands.ChatCommands.Add(new Command("worldedit.region.setwall", SetWall, "/setwall", "/sw", "sw")
 			{
 				HelpText = "Sets walls in the worldedit selection."
@@ -310,10 +282,6 @@ namespace WorldEdit
 			TShockAPI.Commands.ChatCommands.Add(new Command("worldedit.region.shape", Shape, "/shapewallfill", "/shapewf")
 			{
 				HelpText = "Draws line/rectangle/ellipse/triangle in the worldedit selection."
-			});
-			TShockAPI.Commands.ChatCommands.Add(new Command("worldedit.utils.size", Size, "/size")
-			{
-				HelpText = "Shows size of clipboard or schematic."
 			});
 			TShockAPI.Commands.ChatCommands.Add(new Command("worldedit.region.slope", Slope, "/slope", "/sl")
 			{
@@ -875,88 +843,7 @@ namespace WorldEdit
 				_commandQueue.Add(new Drain(info.X, info.Y, info.X2, info.Y2, e.Player));
 		}
 
-		private void Fill(CommandArgs e)
-		{
-			PlayerInfo info = e.Player.GetPlayerInfo();
-			if (info.X == -1 || info.Y == -1 || info.X2 == -1 || info.Y2 == -1)
-			{
-				e.Player.SendErrorMessage("Invalid selection.");
-				return;
-			}
-			if (e.Parameters.Count == 0)
-			{
-				e.Player.SendErrorMessage("//fill <tile> [=> boolean expr...]");
-				return;
-			}
-
-			var tiles = ID.GetTileID(e.Parameters[0].ToLowerInvariant());
-
-			if (tiles.Count == 0)
-			{
-				e.Player.SendErrorMessage("Invalid tile '{0}'!", e.Parameters[0]);
-				return;
-			}
-			else if (tiles.Count > 1)
-			{
-				e.Player.SendErrorMessage("More than one tile matched!");
-				return;
-			}
-
-			Expression? expression;
-			if (e.Parameters.Count > 1)
-			{
-				if (!Parser.TryParseTree(e.Parameters.Skip(1), out expression))
-				{
-					e.Player.SendErrorMessage("Invalid expression!");
-					return;
-				}
-			}
-			else { Parser.TryParseTree(new string[] { "=>", "!t" }, out expression); }
-
-			_commandQueue.Add(new Set(info.X, info.Y, info.X2, info.Y2, info.MagicWand!, e.Player, tiles[0], expression!));
-		}
-
-		private void FillWall(CommandArgs e)
-		{
-			PlayerInfo info = e.Player.GetPlayerInfo();
-			if (info.X == -1 || info.Y == -1 || info.X2 == -1 || info.Y2 == -1)
-			{
-				e.Player.SendErrorMessage("Invalid selection.");
-				return;
-			}
-			if (e.Parameters.Count == 0)
-			{
-				e.Player.SendErrorMessage("//fill <tile> [=> boolean expr...]");
-				return;
-			}
-
-			var walls = ID.GetWallID(e.Parameters[0].ToLowerInvariant());
-			if (walls.Count == 0)
-			{
-				e.Player.SendErrorMessage("Invalid wall '{0}'!", e.Parameters[0]);
-				return;
-			}
-			else if (walls.Count > 1)
-			{
-				e.Player.SendErrorMessage("More than one wall matched!");
-				return;
-			}
-
-			Expression? expression;
-			if (e.Parameters.Count > 1)
-			{
-				if (!Parser.TryParseTree(e.Parameters.Skip(1), out expression))
-				{
-					e.Player.SendErrorMessage("Invalid expression!");
-					return;
-				}
-			}
-			else { Parser.TryParseTree(new string[] { "=>", "!w" }, out expression); }
-
-			_commandQueue.Add(new SetWall(info.X, info.Y, info.X2, info.Y2, info.MagicWand!, e.Player, walls[0], expression!));
-		}
-
-		private void FixGhosts(CommandArgs e)
+        private void FixGhosts(CommandArgs e)
 		{
 			PlayerInfo info = e.Player.GetPlayerInfo();
 			if (info.X == -1 || info.Y == -1 || info.X2 == -1 || info.Y2 == -1)
@@ -1210,107 +1097,6 @@ namespace WorldEdit
 			info.Y = e.Player.TileY - radius;
 			info.Y2 = e.Player.TileY + radius + 2;
 			e.Player.SendSuccessMessage("Selected tiles around you!");
-		}
-
-		private void Outline(CommandArgs e)
-		{
-			if (e.Parameters.Count < 3)
-			{
-				e.Player.SendErrorMessage("Invalid syntax! Proper syntax: //outline <tile> <color> <state> [=> boolean expr...]");
-				return;
-			}
-			PlayerInfo info = e.Player.GetPlayerInfo();
-			if (info.X == -1 || info.Y == -1 || info.X2 == -1 || info.Y2 == -1)
-			{
-				e.Player.SendErrorMessage("Invalid selection!");
-				return;
-			}
-
-			var colors = ID.GetColorID(e.Parameters[1].ToLowerInvariant());
-
-			if (colors.Count == 0)
-				e.Player.SendErrorMessage("Invalid color '{0}'!", e.Parameters[0]);
-			else if (colors.Count > 1)
-				e.Player.SendErrorMessage("More than one color matched!");
-			else
-			{
-				bool state = false;
-				if (string.Equals(e.Parameters[2], "active", StringComparison.OrdinalIgnoreCase))
-					state = true;
-				else if (string.Equals(e.Parameters[2], "a", StringComparison.OrdinalIgnoreCase))
-					state = true;
-				else if (string.Equals(e.Parameters[2], "na", StringComparison.OrdinalIgnoreCase))
-					state = false;
-				else if (!string.Equals(e.Parameters[2], "nactive", StringComparison.OrdinalIgnoreCase))
-				{
-					e.Player.SendErrorMessage("Invalid active state '{0}'!", e.Parameters[1]);
-					return;
-				}
-
-				var tiles = ID.GetTileID(e.Parameters[0].ToLowerInvariant());
-
-				if (tiles.Count == 0)
-					e.Player.SendErrorMessage("Invalid tile '{0}'!", e.Parameters[0]);
-				else if (tiles.Count > 1)
-					e.Player.SendErrorMessage("More than one tile matched!");
-				else
-				{
-					Expression? expression = null;
-					if (e.Parameters.Count > 3)
-					{
-						if (!Parser.TryParseTree(e.Parameters.Skip(3), out expression))
-						{
-							e.Player.SendErrorMessage("Invalid expression!");
-							return;
-						}
-					}
-					_commandQueue.Add(new Outline(info.X, info.Y, info.X2, info.Y2, info.MagicWand!, e.Player, tiles[0], colors[0], state, expression!));
-				}
-			}
-		}
-
-		private void OutlineWall(CommandArgs e)
-		{
-			if (e.Parameters.Count < 2)
-			{
-				e.Player.SendErrorMessage("Invalid syntax! Proper syntax: //outlinewall <wall> [color] [=> boolean expr...]");
-				return;
-			}
-			PlayerInfo info = e.Player.GetPlayerInfo();
-			if (info.X == -1 || info.Y == -1 || info.X2 == -1 || info.Y2 == -1)
-			{
-				e.Player.SendErrorMessage("Invalid selection!");
-				return;
-			}
-
-			var colors = ID.GetColorID(e.Parameters[1].ToLowerInvariant());
-
-			if (colors.Count == 0)
-				e.Player.SendErrorMessage("Invalid color '{0}'!", e.Parameters[0]);
-			else if (colors.Count > 1)
-				e.Player.SendErrorMessage("More than one color matched!");
-			else
-			{
-				var walls = ID.GetWallID(e.Parameters[0].ToLowerInvariant());
-
-				if (walls.Count == 0)
-					e.Player.SendErrorMessage("Invalid wall '{0}'!", e.Parameters[0]);
-				else if (walls.Count > 1)
-					e.Player.SendErrorMessage("More than one wall matched!");
-				else
-				{
-					Expression? expression = null;
-					if (e.Parameters.Count > 2)
-					{
-						if (!Parser.TryParseTree(e.Parameters.Skip(2), out expression))
-						{
-							e.Player.SendErrorMessage("Invalid expression!");
-							return;
-						}
-					}
-					_commandQueue.Add(new OutlineWall(info.X, info.Y, info.X2, info.Y2, info.MagicWand!, e.Player, walls[0], colors[0], expression!));
-				}
-			}
 		}
 
 		private void Paint(CommandArgs e)
@@ -1728,114 +1514,6 @@ namespace WorldEdit
 					e.Player.SendSuccessMessage("Set selection to region '{0}'.", region.Name);
 				}
 			}
-		}
-
-		private void Replace(CommandArgs e)
-		{
-			if (e.Parameters.Count < 2)
-			{
-				e.Player.SendErrorMessage("Invalid syntax! Proper syntax: //replace <from tile> <to tile> [=> boolean expr...]");
-				return;
-			}
-
-			PlayerInfo info = e.Player.GetPlayerInfo();
-			if (info.X == -1 || info.Y == -1 || info.X2 == -1 || info.Y2 == -1)
-			{
-				e.Player.SendErrorMessage("Invalid selection!");
-				return;
-			}
-
-			var tilesFrom = ID.GetTileID(e.Parameters[0].ToLowerInvariant());
-
-			if (tilesFrom.Count == 0)
-			{
-				e.Player.SendErrorMessage("Invalid tile '{0}'!", e.Parameters[0]);
-				return;
-			}
-			else if (tilesFrom.Count > 1)
-			{
-				e.Player.SendErrorMessage("More than one tile matched!");
-				return;
-			}
-
-			var tilesTo = ID.GetTileID(e.Parameters[1].ToLowerInvariant());
-
-			if (tilesTo.Count == 0)
-			{
-				e.Player.SendErrorMessage("Invalid tile '{0}'!", e.Parameters[1]);
-				return;
-			}
-			else if (tilesTo.Count > 1)
-			{
-				e.Player.SendErrorMessage("More than one tile matched!");
-				return;
-			}
-
-			Expression? expression = null;
-			if (e.Parameters.Count > 2)
-			{
-				if (!Parser.TryParseTree(e.Parameters.Skip(2), out expression))
-				{
-					e.Player.SendErrorMessage("Invalid expression!");
-					return;
-				}
-			}
-
-			_commandQueue.Add(new Replace(info.X, info.Y, info.X2, info.Y2, e.Player, tilesFrom[0], tilesTo[0], expression!));
-		}
-
-		private void ReplaceWall(CommandArgs e)
-		{
-			if (e.Parameters.Count < 2)
-			{
-				e.Player.SendErrorMessage("Invalid syntax! Proper syntax: //replace <from tile> <to tile> [=> boolean expr...]");
-				return;
-			}
-
-			PlayerInfo info = e.Player.GetPlayerInfo();
-			if (info.X == -1 || info.Y == -1 || info.X2 == -1 || info.Y2 == -1)
-			{
-				e.Player.SendErrorMessage("Invalid selection!");
-				return;
-			}
-
-			var wallsFrom = ID.GetTileID(e.Parameters[0].ToLowerInvariant());
-
-			if (wallsFrom.Count == 0)
-			{
-				e.Player.SendErrorMessage("Invalid tile '{0}'!", e.Parameters[0]);
-				return;
-			}
-			else if (wallsFrom.Count > 1)
-			{
-				e.Player.SendErrorMessage("More than one tile matched!");
-				return;
-			}
-
-			var wallsTo = ID.GetWallID(e.Parameters[1].ToLowerInvariant());
-
-			if (wallsTo.Count == 0)
-			{
-				e.Player.SendErrorMessage("Invalid wall '{0}'!", e.Parameters[1]);
-				return;
-			}
-			else if (wallsTo.Count > 1)
-			{
-				e.Player.SendErrorMessage("More than one wall matched!");
-				return;
-			}
-
-			Expression? expression = null;
-			if (e.Parameters.Count > 2)
-			{
-				if (!Parser.TryParseTree(e.Parameters.Skip(2), out expression))
-				{
-					e.Player.SendErrorMessage("Invalid expression!");
-					return;
-				}
-			}
-
-			_commandQueue.Add(new ReplaceWall(info.X, info.Y, info.X2, info.Y2, e.Player, wallsFrom[0], wallsTo[0], expression!));
 		}
 
 		private void Resize(CommandArgs e)
@@ -2328,7 +2006,7 @@ namespace WorldEdit
 						return;
 					}
 				}
-				_commandQueue.Add(new Set(info.X, info.Y, info.X2, info.Y2, info.MagicWand!, e.Player, tiles[0], expression!));
+                _commandQueue.Add(new Set(info.X, info.Y, info.X2, info.Y2, info.MagicWand!, e.Player, tiles[0], expression!));
 			}
 		}
 
@@ -2365,39 +2043,6 @@ namespace WorldEdit
 				}
 				_commandQueue.Add(new SetWall(info.X, info.Y, info.X2, info.Y2, info.MagicWand!, e.Player, walls[0], expression!));
 			}
-		}
-
-		private void SetGrass(CommandArgs e)
-		{
-			if (e.Parameters.Count == 0)
-			{
-				e.Player.SendErrorMessage("Invalid syntax! Proper syntax: //setgrass <grass> [=> boolean expr...]");
-				return;
-			}
-			PlayerInfo info = e.Player.GetPlayerInfo();
-			if (info.X == -1 || info.Y == -1 || info.X2 == -1 || info.Y2 == -1)
-			{
-				e.Player.SendErrorMessage("Invalid selection!");
-				return;
-			}
-
-			if (!Biomes.Keys.Contains(e.Parameters[0].ToLowerInvariant()) || (e.Parameters[0].ToLowerInvariant() == "snow"))
-			{
-				e.Player.SendErrorMessage("Invalid grass '{0}'!", e.Parameters[0]);
-				return;
-			}
-
-			Expression? expression = null;
-			if (e.Parameters.Count > 1)
-			{
-				if (!Parser.TryParseTree(e.Parameters.Skip(1), out expression))
-				{
-					e.Player.SendErrorMessage("Invalid expression!");
-					return;
-				}
-			}
-
-			_commandQueue.Add(new SetGrass(info.X, info.Y, info.X2, info.Y2, info.MagicWand!, e.Player, e.Parameters[0].ToLowerInvariant(), expression!));
 		}
 
 		private void SetWire(CommandArgs e)
@@ -2674,76 +2319,6 @@ namespace WorldEdit
 			}
 
 			_commandQueue.Add(new Shape(info.X, info.Y, info.X2, info.Y2, info.MagicWand!, e.Player, type, rotateType, flipType, wall, filled, materialType, expression!));
-		}
-
-		private void Size(CommandArgs e)
-		{
-			switch (e.Parameters.ElementAtOrDefault(0)?.ToLower())
-			{
-				case "c":
-				case "clipboard":
-					{
-						if (e.Player.Account == null)
-						{
-							e.Player.SendErrorMessage("You have to be logged in to use this command.");
-							return;
-						}
-
-						UserAccount account = e.Player.Account;
-						if (e.Parameters.Count > 1)
-						{
-							if (!e.Player.HasPermission("worldedit.usage.otheraccounts"))
-							{
-								e.Player.SendErrorMessage("You do not have permission to view other player's clipboards.");
-								return;
-							}
-							account = TShock.UserAccounts.GetUserAccountByName(e.Parameters[1]);
-							if (account == null)
-							{
-								e.Player.SendErrorMessage("Invalid account name!");
-								return;
-							}
-						}
-
-						if (!Tools.HasClipboard(account.ID, out var version))
-						{
-							e.Player.SendErrorMessage($"{account.Name} doesn't have a clipboard.");
-							return;
-						}
-
-						WorldSectionData data = Tools.LoadWorldData(Tools.GetClipboardPath(account.ID, version));
-						e.Player.SendSuccessMessage($"{account.Name}'s clipboard size: " +
-							$"{data.Tiles.GetLength(0) - 1}x{data.Tiles.GetLength(1) - 1}.");
-						break;
-					}
-				case "s":
-				case "schematic":
-					{
-						if (!e.Player.HasPermission("worldedit.schematic"))
-						{
-							e.Player.SendErrorMessage("You do not have permission to use this command.");
-							return;
-						}
-
-						var path = Path.Combine("worldedit", string.Format("schematic-{0}.dat", e.Parameters[1]));
-						if (!File.Exists(path))
-						{
-							e.Player.SendErrorMessage("Invalid schematic '{0}'!", e.Parameters[1]);
-							return;
-						}
-
-						WorldSectionData data = Tools.LoadWorldData(path);
-						e.Player.SendSuccessMessage($"Schematic's size ('{e.Parameters[1]}'): " +
-							$"{data.Tiles.GetLength(0) - 1}x{data.Tiles.GetLength(1) - 1}.");
-						break;
-					}
-				default:
-					{
-						e.Player.SendErrorMessage("//size <clipboard/c> [user name]\n" +
-												  "//size <schematic/s> <name>");
-						break;
-					}
-			}
 		}
 
 		private void Slope(CommandArgs e)

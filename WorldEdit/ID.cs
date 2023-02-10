@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Terraria;
+using Terraria.ID;
 
 namespace WorldEdit
 {
@@ -43,7 +44,7 @@ namespace WorldEdit
 
         public static List<int> GetTileID(string tile)
         {
-            if (int.TryParse(tile, out var id) && id >= 0 && id < Terraria.ID.TileID.Count)
+            if (int.TryParse(tile, out var id) && id >= 0 && id < TileID.Count)
                 return new List<int> { id };
 
             var list = new List<int>();
@@ -59,7 +60,7 @@ namespace WorldEdit
 
         public static List<int> GetWallID(string wall)
         {
-            if (int.TryParse(wall, out var id) && id >= 0 && id < Terraria.ID.WallID.Count)
+            if (int.TryParse(wall, out var id) && id >= 0 && id < WallID.Count)
                 return new List<int> { id };
 
             var list = new List<int>();
