@@ -44,7 +44,7 @@ namespace WorldEdit
 
         public static List<int> GetTileID(string tile)
         {
-            if (int.TryParse(tile, out var id) && id >= -5 && id < TileID.Count)
+            if (int.TryParse(tile, out var id) && id >= 0 && id < TileID.Count)
                 return new List<int> { id };
 
             var list = new List<int>();
