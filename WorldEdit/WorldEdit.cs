@@ -875,88 +875,86 @@ namespace WorldEdit
 				_commandQueue.Add(new Drain(info.X, info.Y, info.X2, info.Y2, e.Player));
 		}
 
-		private void Fill(CommandArgs e)
-		{
-			PlayerInfo info = e.Player.GetPlayerInfo();
-			if (info.X == -1 || info.Y == -1 || info.X2 == -1 || info.Y2 == -1)
-			{
-				e.Player.SendErrorMessage("Invalid selection.");
-				return;
-			}
-			if (e.Parameters.Count == 0)
-			{
-				e.Player.SendErrorMessage("//fill <tile> [=> boolean expr...]");
-				return;
-			}
+        private void Fill(CommandArgs e)
+        {
+            PlayerInfo info = e.Player.GetPlayerInfo();
+            if (info.X == -1 || info.Y == -1 || info.X2 == -1 || info.Y2 == -1)
+            {
+                e.Player.SendErrorMessage("Invalid selection.");
+                return;
+            }
+            if (e.Parameters.Count == 0)
+            {
+                e.Player.SendErrorMessage("//fill <tile> [=> boolean expr...]");
+                return;
+            }
 
-			var tiles = ID.GetTileID(e.Parameters[0].ToLowerInvariant());
+            var tiles = ID.GetTileID(e.Parameters[0].ToLowerInvariant());
 
-			if (tiles.Count == 0)
-			{
-				e.Player.SendErrorMessage("Invalid tile '{0}'!", e.Parameters[0]);
-				return;
-			}
-			else if (tiles.Count > 1)
-			{
-				e.Player.SendErrorMessage("More than one tile matched!");
-				return;
-			}
+            if (tiles.Count == 0)
+            {
+                e.Player.SendErrorMessage("Invalid tile '{0}'!", e.Parameters[0]);
+                return;
+            }
+            else if (tiles.Count > 1)
+            {
+                e.Player.SendErrorMessage("More than one tile matched!");
+                return;
+            }
 
-			Expression? expression;
-			if (e.Parameters.Count > 1)
-			{
-				if (!Parser.TryParseTree(e.Parameters.Skip(1), out expression))
-				{
-					e.Player.SendErrorMessage("Invalid expression!");
-					return;
-				}
-			}
-			else { Parser.TryParseTree(new string[] { "=>", "!t" }, out expression); }
+            Expression? expression = null;
+            if (e.Parameters.Count > 1)
+            {
+                if (!Parser.TryParseTree(e.Parameters.Skip(1), out expression))
+                {
+                    e.Player.SendErrorMessage("Invalid expression!");
+                    return;
+                }
+            }
 
-			_commandQueue.Add(new Replace(info.X, info.Y, info.X2, info.Y2, e.Player, -1, tiles[0], expression!));
-		}
+            _commandQueue.Add(new Replace(info.X, info.Y, info.X2, info.Y2, e.Player, -1, tiles[0], expression!));
+        }
 
-		private void FillWall(CommandArgs e)
-		{
-			PlayerInfo info = e.Player.GetPlayerInfo();
-			if (info.X == -1 || info.Y == -1 || info.X2 == -1 || info.Y2 == -1)
-			{
-				e.Player.SendErrorMessage("Invalid selection.");
-				return;
-			}
-			if (e.Parameters.Count == 0)
-			{
-				e.Player.SendErrorMessage("//fill <tile> [=> boolean expr...]");
-				return;
-			}
+        private void FillWall(CommandArgs e)
+        {
+            PlayerInfo info = e.Player.GetPlayerInfo();
+            if (info.X == -1 || info.Y == -1 || info.X2 == -1 || info.Y2 == -1)
+            {
+                e.Player.SendErrorMessage("Invalid selection.");
+                return;
+            }
+            if (e.Parameters.Count == 0)
+            {
+                e.Player.SendErrorMessage("//fill <tile> [=> boolean expr...]");
+                return;
+            }
 
-			var walls = ID.GetWallID(e.Parameters[0].ToLowerInvariant());
-			if (walls.Count == 0)
-			{
-				e.Player.SendErrorMessage("Invalid wall '{0}'!", e.Parameters[0]);
-				return;
-			}
-			else if (walls.Count > 1)
-			{
-				e.Player.SendErrorMessage("More than one wall matched!");
-				return;
-			}
+            var walls = ID.GetWallID(e.Parameters[0].ToLowerInvariant());
+            if (walls.Count == 0)
+            {
+                e.Player.SendErrorMessage("Invalid wall '{0}'!", e.Parameters[0]);
+                return;
+            }
+            else if (walls.Count > 1)
+            {
+                e.Player.SendErrorMessage("More than one wall matched!");
+                return;
+            }
 
-			Expression? expression;
-			if (e.Parameters.Count > 1)
-			{
-				if (!Parser.TryParseTree(e.Parameters.Skip(1), out expression))
-				{
-					e.Player.SendErrorMessage("Invalid expression!");
-					return;
-				}
-			}
-			else { Parser.TryParseTree(new string[] { "=>", "!w" }, out expression); }
+            Expression? expression = null;
+            if (e.Parameters.Count > 1)
+            {
+                if (!Parser.TryParseTree(e.Parameters.Skip(1), out expression))
+                {
+                    e.Player.SendErrorMessage("Invalid expression!");
+                    return;
+                }
+            }
 
-			_commandQueue.Add(new ReplaceWall(info.X, info.Y, info.X2, info.Y2, e.Player, 0, walls[0], expression!));
-		}
+            _commandQueue.Add(new ReplaceWall(info.X, info.Y, info.X2, info.Y2, e.Player, 0, walls[0], expression!));
+        }
 
-		private void FixGhosts(CommandArgs e)
+        private void FixGhosts(CommandArgs e)
 		{
 			PlayerInfo info = e.Player.GetPlayerInfo();
 			if (info.X == -1 || info.Y == -1 || info.X2 == -1 || info.Y2 == -1)
