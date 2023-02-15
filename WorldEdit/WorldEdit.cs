@@ -263,15 +263,15 @@ namespace WorldEdit
 			{
 				HelpText = "Rotates the worldedit clipboard."
 			});
-			TShockAPI.Commands.ChatCommands.Add(new Command("worldedit.schematic", SchematicNew, "/schematic", "/schem", "/sc", "sc")
+			TShockAPI.Commands.ChatCommands.Add(new Command("worldedit.schematic", SchematicNew, "/schematic", "/schem", "/sc")
 			{
 				HelpText = "Manages worldedit schematics."
 			});
-			TShockAPI.Commands.ChatCommands.Add(new Command("worldedit.schematic", SchematicOld, "/schematicold", "/schemo", "/sco", "sco")
+			TShockAPI.Commands.ChatCommands.Add(new Command("worldedit.schematic", SchematicOld, "/schematicold", "/schemo", "/sco")
 			{
 				HelpText = "Manages old worldedit schematics."
 			});
-			TShockAPI.Commands.ChatCommands.Add(new Command("worldedit.schematic.private", PrivateSchematic, "/private-schematic", "/priv-schem", "/psc", "psc")
+			TShockAPI.Commands.ChatCommands.Add(new Command("worldedit.schematic.private", PrivateSchematic, "/private-schematic", "/priv-schem", "/psc")
 			{
 				HelpText = "Manages private worldedit schematics."
 			});
