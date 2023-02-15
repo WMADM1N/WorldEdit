@@ -168,7 +168,7 @@ namespace WorldEdit.Expressions
 				case "tile":
 					{
 						if (string.IsNullOrEmpty(rhs))
-							return test = (t, h, k) => t.active();
+							return test = (t, h, k) => t.active() == negated;
 
 						List<int> tiles = ID.GetTileID(rhs);
 						if (tiles.Count == 0 || tiles.Count > 1)
@@ -177,7 +177,7 @@ namespace WorldEdit.Expressions
 					}
 				case "nt":
 				case "ntile":
-					return test = (t, h, k) => !t.active();
+					return test = (t, h, k) => t.active() == negated;
 				case "tp":
 				case "tilepaint":
 					{
