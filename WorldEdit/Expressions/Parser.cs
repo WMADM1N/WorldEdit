@@ -242,7 +242,7 @@ namespace WorldEdit.Expressions
 						if (string.IsNullOrEmpty(rhs))
 							return test = (t, h, k) => t.wall == 0;
 
-						var walls = ID.GetTileID(rhs);
+						var walls = ID.GetWallID(rhs);
 						if (walls.Count == 0 || walls.Count > 1)
 							throw new ArgumentException();
 						return test = (t, h, k) => (t.wall == walls[0]) != negated;

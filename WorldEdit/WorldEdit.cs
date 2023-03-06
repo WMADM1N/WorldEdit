@@ -571,6 +571,8 @@ namespace WorldEdit
                                 {
                                     data.X = startX;
                                     data.Y = startY;
+                                    data.X2 = startX;
+                                    data.Y2 = startY;
                                     TShock.Players[e.Msg.whoAmI].SendInfoMessage("Set point 1.");
                                 }
                                 else if (data.Point == 2)
