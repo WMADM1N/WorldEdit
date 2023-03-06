@@ -240,7 +240,7 @@ namespace WorldEdit.Expressions
 				case "wall":
 					{
 						if (string.IsNullOrEmpty(rhs))
-							return test = (t, h, k) => t.wall != 0;
+							return test = (t, h, k) => t.wall == 0;
 
 						var walls = ID.GetTileID(rhs);
 						if (walls.Count == 0 || walls.Count > 1)
